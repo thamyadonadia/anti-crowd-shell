@@ -8,25 +8,32 @@
 
 int main(int argc, char const *argv[]){
     system("clear");
-    char* command = NULL;
-    size_t len = 0;
+
+    char* line = NULL; size_t len = 0;
 
     char currentDirectory[1000];
     getcwd(currentDirectory, sizeof(currentDirectory)); 
 
-    while (1)
-    {
+    while (1){
         printf("acsh %s > ", currentDirectory);
-        int tam = getline(&command, &len, stdin);
+        int tam = getline(&line, &len, stdin);
+        line[tam-1] = '\0'; // TODO: CRIME CRIME ALO CRIME
 
-        // printf("%s", command);
-        // TODO: CRIME CRIME ALO CRIME
-        command[tam-1] = '\0';
-        changeDirectory(command, currentDirectory);
+        char* command = strtok(line, " "); 
+        char* args = strtok(NULL, " ");
 
-        free(command);
-        char* command = NULL;
-        size_t len = 0;
+        // acho que vale a pena tirar da main rs
+        if(getOperation(command) == 1){
+            changeDirectory(command, args, currentDirectory);
+
+        }else if(getOperation(command) == 2){
+            printf("%s\n", line);
+            exitShell(command);
+
+        }
+
+        free(line);
+        char* line = NULL; size_t len = 0;
     }
     
     return 0;

@@ -1,6 +1,10 @@
 #ifndef OPERATION_H
 #define OPERATION_H
 
-void changeDirectory(char* command, char* cwd);
+int getOperation(char* command);
+
+void changeDirectory(char* command, char* path, char* cwd);
+
+void exitShell(char* command);
 
 #endif
