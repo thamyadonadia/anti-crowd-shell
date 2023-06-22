@@ -5,6 +5,7 @@
 
 void changeDirectory(char* command){
     strcat(command, " && ls");
+    printf("%s\n", command);
     system(command);
     return;
 }
