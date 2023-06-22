@@ -1,20 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <limits.h>
 
 #include "operation.h"
 
 int main(int argc, char const *argv[]){
-    system("clear"); 
-    printf("acsh> ");  
+    system("clear");
+    char* command = NULL;
+    size_t len = 0;
 
-    char* command; size_t len;
-    int tam = getline(&command, &len, stdin);   
+    char currentDirectory[1000];
+    getcwd(currentDirectory, sizeof(currentDirectory)); 
 
-    // TODO: CRIME CRIME ALO CRIME  
-    command[tam-1] = '\0';
-    changeDirectory(command);
+    while (1)
+    {
+        printf("acsh %s > ", currentDirectory);
+        int tam = getline(&command, &len, stdin);
 
-    free(command);
+        // printf("%s", command);
+        // TODO: CRIME CRIME ALO CRIME
+        command[tam-1] = '\0';
+        changeDirectory(command, currentDirectory);
+
+        free(command);
+        char* command = NULL;
+        size_t len = 0;
+    }
+    
     return 0;
 }
