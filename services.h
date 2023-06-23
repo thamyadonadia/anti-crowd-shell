@@ -7,7 +7,7 @@ char* inputEntry();
 
 int taskCaseHandler(char* command);
 
-void taskPerform(int taskType, char* command, char* args, char* currentDir);
+void taskPerform(int taskType, char* input, char* currentDir);
 
 
 #endif

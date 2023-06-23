@@ -28,16 +28,25 @@ char* inputEntry(){
  * 2 - ls
  * 3 em diante - outros (TODO)
 */
-int taskCaseHandler(char* command){
+int taskCaseHandler(char* input){
+
+    char* command = strtok(input, " ");
+    char* args = strtok(NULL, " ");
+
     if(!strcmp(command, "cd")) return 0;
     else if(!strcmp(command, "exit")) return 1;
     else if(!strcmp(command, "ls")) return 2;
     
+
     //TODO: OUTROS CASOS
     else return 3;
 }
 
-void taskPerform(int taskType, char* command, char* args, char* currentDir){
+void taskPerform(int taskType, char* input, char* currentDir){
+    
+    char* command = strtok(input, " ");
+    char* args = strtok(NULL, " ");
+
     if(taskType == 0){
         changeDirectory(args, currentDir);
     }
@@ -50,3 +59,4 @@ void taskPerform(int taskType, char* command, char* args, char* currentDir){
 
     else printf("operações ainda não tratadas!\n");
 }
+

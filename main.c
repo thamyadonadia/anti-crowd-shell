@@ -9,30 +9,26 @@
 
 int main(int argc, char const *argv[]){
     system("clear");
-
-    char* input;
-
-    char currentDirectory[1000];
-    getcwd(currentDirectory, sizeof(currentDirectory)); 
+    
+    char* input, cwd = malloc(sizeof(char)*1000);
+    getcwd(cwd, sizeof(cwd)); 
 
     while (1){
-        shellHeader(currentDirectory);
+        shellHeader(cwd);
 
         //get user input
         input = inputEntry();
 
-        char* command = strtok(input, " ");
-        char* args = strtok(NULL, " ");
-
         //find out which type of task it is
-        int taskType = taskCaseHandler(command);
+        int taskType = taskCaseHandler(input);
 
         //actually executes the task
-        taskPerform(taskType, command, args, currentDirectory);
+        taskPerform(taskType, input, cwd);
 
         //pre requisite for inputEntry function
         free(input);
     }
     
+    free(cwd);
     return 0;
 }
