@@ -1,0 +1,4 @@
+[] fazer o exit 
+[] testar todas as funções separadamente
+[] verificar valgrind
+[] lidar com o tratamento dos inputs
