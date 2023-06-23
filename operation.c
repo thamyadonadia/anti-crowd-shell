@@ -1,4 +1,5 @@
 #include "operation.h"
+#include "services.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,12 +11,11 @@
 // ========== Operações Internas ============
 void changeDirectory(char* path, char* cwd){
     chdir(path);
-    //printf("%s\n",getcwd(cwd, 1000));
     getcwd(cwd, 1000);
 }
 
-void exitShell(char* input, int* sessionLeaders, int countLeaders){
-    for(int i=0; i<countLeaders; i++){
+void exitShell(char* input, int* sessionLeaders, int* countLeaders){
+    for(int i=0; i<(*countLeaders); i++){
         kill(sessionLeaders[i], SIGKILL);
     }
 
@@ -25,22 +25,45 @@ void exitShell(char* input, int* sessionLeaders, int countLeaders){
 
 
 // =========== Execução de programas ==========
-void foregroungProcess(char* command){ // recebe o comando sem o %
+void singleProcess(char* command){ // recebe o comando sem o %
     // nome do executável + no máximo 3 argumentos
-    pid_t pid = fork();
-    char* filename = strtok(command, ' '); char* args[3]; int i=0;
+    char* filename; char* args[3]; int i=0;
+    pid_t pid;
+    //processo em foreground
+    if(checkDelimiter(command)){
+        pid = fork();
+        //no filho
+        if(!pid){
+            filename = strtok(command, " ");
 
-    printf("filename: %s\n", filename);
+            printf("filename: %s\n", filename);
 
-    while(args[i] && i<2){
-        args[i] = strtok(NULL, ' '); 
-        printf("arg[%d] = %s\n", i, args[i]);
+            while(args[i] && i<2){
+                args[i] = strtok(NULL, " "); 
+                printf("arg[%d] = %s\n", i, args[i]);
+            }
+
+            execvp(filename, args); // no filho
+        }
+        else waitpid(pid, NULL, WUNTRACED); //no pai
     }
+    //processo em background
+    else{
+        pid = fork();
+        //no filho
+        if(!pid){
+            filename = strtok(command, " ");
 
+            printf("filename: %s\n", filename);
 
-
-    if(!pid) execvp(filename, args); // no filho
-    if(pid) waitpid(pid, NULL, WUNTRACED);
+            while(args[i] && i<2){
+                args[i] = strtok(NULL, " "); 
+                printf("arg[%d] = %s\n", i, args[i]);
+            }
+            setsid();
+            execvp(filename, args); // no filho
+        }
+    }
 }
 
 int backgroundGroupProcess(char* input){
@@ -59,10 +82,10 @@ int backgroundGroupProcess(char* input){
     printf("number of process = %d\n", processCount);
 
     /*for(int j=0; j<processCount; j++){
-        char* filename = strtok(input, ' '); char* args[3]; int i=0;
+        char* filename = strtok(input, " "); char* args[3]; int i=0;
 
         while(args[i] && i<2){
-            args[i] = strtok(NULL, ' '); 
+            args[i] = strtok(NULL, " "); 
         }
         
         if(j==0){ 

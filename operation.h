@@ -8,12 +8,12 @@
 void changeDirectory(char* path, char* cwd);
 
 //must free everything
-void exitShell(char* input, int* sessionLeaders, int countLeaders);
+void exitShell(char* input, int* sessionLeaders, int* countLeaders);
 
 /** Executa um comando em foreground
  * @param char* comando a ser executado em foreground, sem o operador especial
 */
-void foregroungProcess(char* command);
+void singleProcess(char* command);
 
 /** Executa até 5 comandos em background
  * @param char* input passado na linha de comando
