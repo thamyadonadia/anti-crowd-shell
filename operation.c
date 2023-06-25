@@ -56,12 +56,13 @@ void singleProcess(char* command){ // recebe o comando sem o %
 
             while(args[i] && i<2){
                 args[i] = strtok(NULL, " "); 
-                printf("arg[%d] = %s\n", i, args[i]);
+                //printf("arg[%d] = %s\n", i, args[i]);
             }
             
             setsid();
             execvp(filename, args); 
         }
+        waitpid(pid, NULL, WUNTRACED);
     }
 }
 
@@ -80,7 +81,7 @@ int backgroundGroupProcess(char* input){
 
     printf("number of process = %d\n", processCount);
 
-    /*for(int j=0; j<processCount; j++){
+    for(int j=0; j<processCount; j++){
         char* filename = strtok(input, " "); char* args[3]; int i=0;
 
         while(args[i] && i<2){
@@ -94,6 +95,7 @@ int backgroundGroupProcess(char* input){
                 processGroupID = setsid();
                 execvp(filename, args);
             }
+            else printf("%d\n", leader);
             
         }else{
             pid_t pid = fork();
@@ -102,9 +104,9 @@ int backgroundGroupProcess(char* input){
                 setpgid(pid, processGroupID);
                 execvp(filename, args);
             }
+            else printf("%d\n", pid);
         }
-
-    }*/
+    }
 
     return leader;
 }

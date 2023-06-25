@@ -8,19 +8,21 @@
 #include "services.h"
 
 int main(int argc, char const *argv[]){
-    system("clear");
+    //system("clear");
     
-    char* input; char* cwd = malloc(sizeof(char)*1000);
-    char* inputCopy; 
-    int countLeaders = 0; int sizeSessionLeaders = 10000; int* sessionLeaders = malloc(sizeof(int)*sizeSessionLeaders);
-    getcwd(cwd, sizeof(cwd)); 
+    char* cwd = malloc(1000 * sizeof(char));
+    int countLeaders = 0; int sizeSessionLeaders = 10000; 
+    int* sessionLeaders = malloc(sizeSessionLeaders * sizeof(int));
+    cwd = getcwd(cwd, 1000);
 
     while (1){
+        char* input = malloc(1000 * sizeof(char)); 
+        char* inputCopy = malloc(1000 * sizeof(char));
         shellHeader(cwd);
 
         //get user input
         input = inputEntry();
-        inputCopy = strdup(input);
+        strcpy(inputCopy ,input);
         //find out which type of task it is
         int taskType = taskCaseHandler(input);
 
@@ -32,6 +34,7 @@ int main(int argc, char const *argv[]){
         free(inputCopy);
     }
     
+    //essas coisas devem estar no exit?
     free(cwd);
     free(sessionLeaders);
     return 0;
