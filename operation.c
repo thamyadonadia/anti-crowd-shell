@@ -67,64 +67,49 @@ void singleProcess(char* command){ // recebe o comando sem o %
 }
 
 int backgroundGroupProcess(char* input){
-    int len = strlen(input); int j=0;
-    int processCount=1; int delimPosition[4];
+    int len = strlen(input);
+    int k=0, inicio=0, processCount=0;
     pid_t leader; pid_t processGroupID;
 
-    for(int i=0; i<len; i++){
-        //possivel delimitador encontrado
-        if(input[i]=='<' && input[i+1]=='3'){
-            //confirmação da delimitação e que há outro programa a ser executado
-            if(input[i-1]== ' ' && input[i+2]== ' '){
-                processCount++;
-            } 
-        }
-    }
-
-    // f 1 2 3 <3 t1 1 2 3 i=8 delimPosition[0]=8
-    // strtok(input, "<3")
-
-    printf("number of process = %d\n", processCount);
-
-    for(int j=0; j<processCount; j++){       
-        if(j==0){ 
-            char* filename = strtok(input, "<3"); char* args[3]; int i=0;
-            printf("process filename: %s\n", filename);
-
-            printf("args program=%s : ", filename);
-            while(args[i] && i<2){
-                args[i] = strtok(NULL, " ");
-                printf("%s ", args[i]);
-                i++;
-            }
-        
-           // leader = fork();
-
-           /* if(!leader){
-                processGroupID = setsid();
-                execvp(filename, args);
-            }
-            else printf("session leader pid=%d\n", leader);*/
+    for(int i=0; i<= len; i++){
+        if(((i != len-1) && (input[i] == '<' && input[i+1] == '3')) || input[i] == '\0'){
+            if(input[i-1]==' ' || input[i]=='\0'){
+                char* process = malloc(sizeof(char) * 100);
             
-        }else{
-            char* filename = strtok(NULL, "<3"); char* args[3]; int i=0;
-            printf("process filename: %s\n", filename);
+                for(int j=inicio; j<i; j++){
+                    process[k] = input[j];
+                    k++;
+                }
 
-            printf("args program=%s : ", filename);
-            while(args[i] && i<2){
-                args[i] = strtok(NULL, " ");
-                printf("%s ", args[i]);
-                i++;
-            }
-            /*pid_t pid = fork();
+                char* filename = strtok(process, " "); char* args[3]; int l=0;
+                args[l] = strtok(NULL, " ");
+                while(args[l] && l<2){
+                    l++;
+                    args[l] = strtok(NULL, " "); 
+                }
 
-            if(!pid){
-                setpgid(pid, processGroupID);
-                execvp(filename, args);
-            }
-            else printf("process in background pid=%d\n", pid);*/
+                if(processCount==0){ // primeiro processo lido
+                    leader = fork();
+
+                    if(!leader){ // no filho
+                        processGroupID = setsid();
+                        execvp(filename, args);
+                    } else waitpid(leader, NULL, WUNTRACED);
+
+                }else{
+                    pid_t pid = fork();
+
+                    if(!pid){ // no filho
+                        setpgid(pid, processGroupID);
+                        execvp(filename, args);
+                    } else waitpid(pid, NULL, WUNTRACED);
+                }
+
+                inicio = i+3; k=0; processCount++;
+                free(process);
+            }  
         }
-    }
+    }    
 
     return leader;
 }
