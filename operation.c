@@ -10,7 +10,7 @@
 
 // ========== Operações Internas ============
 void changeDirectory(char* path, char* cwd){
-    chdir(path);
+    chdir(path); //TODO: verificação de erro caso o diretório não exista.
     getcwd(cwd, 1000);
 }
 
@@ -27,41 +27,40 @@ void exitShell(char* input, int* sessionLeaders, int* countLeaders){
 // =========== Execução de programas ==========
 void singleProcess(char* command){ // recebe o comando sem o %
     // nome do executável + no máximo 3 argumentos
-    char* filename; char* args[3]; int i=0;
-    pid_t pid;
-    //processo em foreground
-    if(checkDelimiter(command)){
+    printf("UNICO PROCESSO\n");
+    
+    char* filename; char* args[3]; int i=0; pid_t pid;
+    
+    if(checkForeground(command)){
         pid = fork();
-        //no filho
-        if(!pid){
+        
+        if(!pid){ //no filho
             filename = strtok(command, " ");
 
-            printf("filename: %s\n", filename);
-
             while(args[i] && i<2){
-                args[i] = strtok(NULL, " "); 
+                args[i] = strtok(NULL, " "); i++; // TODO: tirar o % dos argumentos
                 printf("arg[%d] = %s\n", i, args[i]);
             }
-
-            execvp(filename, args); // no filho
+            execvp(filename, args);
         }
+
         else waitpid(pid, NULL, WUNTRACED); //no pai
     }
     //processo em background
     else{
+        printf("PROCESSO BACKGROUND\n");
         pid = fork();
-        //no filho
-        if(!pid){
-            filename = strtok(command, " ");
 
-            printf("filename: %s\n", filename);
+        if(!pid){ //no filho
+            filename = strtok(command, " ");
 
             while(args[i] && i<2){
                 args[i] = strtok(NULL, " "); 
                 printf("arg[%d] = %s\n", i, args[i]);
             }
+            
             setsid();
-            execvp(filename, args); // no filho
+            execvp(filename, args); 
         }
     }
 }

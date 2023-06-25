@@ -11,7 +11,7 @@ int main(int argc, char const *argv[]){
     system("clear");
     
     char* input; char* cwd = malloc(sizeof(char)*1000);
-    char* inputCopy;
+    char* inputCopy; 
     int countLeaders = 0; int sizeSessionLeaders = 10000; int* sessionLeaders = malloc(sizeof(int)*sizeSessionLeaders);
     getcwd(cwd, sizeof(cwd)); 
 

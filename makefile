@@ -14,6 +14,7 @@ services.o: services.c services.h
 
 clean:
 	@rm -rf *.o
+	clear
 
 run: acsh
 	@./acsh

@@ -10,7 +10,6 @@ void shellHeader(char* cd){
     printf("acsh %s> ", cd);
 }
 
-
 char* inputEntry(){
     char* line = NULL;
     size_t len = 0;
@@ -40,7 +39,7 @@ int taskCaseHandler(char* input){
     if(!strcmp(command, "cd")) return 0;
     else if(!strcmp(command, "exit")) return 1;
     else if(!strcmp(command, "ls")) return 2;
-    else if(delim) return 3;
+    else if(delim) return 3; 
     else return 4;
 }
 
@@ -50,7 +49,7 @@ void taskPerform(int taskType, char* input, char* cwd, int* sessionLeaders, int*
     char* command = strtok(input, " "); char* args = strtok(NULL, " ");
 
     if(taskType == 0){
-        //printf("args = %s e cwd=%s", args, cwd);
+        printf("args = %s\n", args);
         changeDirectory(args, cwd);
 
     }else if(taskType == 1){
@@ -60,7 +59,7 @@ void taskPerform(int taskType, char* input, char* cwd, int* sessionLeaders, int*
         list(args);
 
     }else if(taskType == 3){
-        int nextLeader = backgroundGroupProcess(inputcpy); *countLeaders ++;
+        int nextLeader = backgroundGroupProcess(inputcpy); *countLeaders++;
         if((*countLeaders)>(*sizeSessionLeaders)) sessionLeaders = realloc(sessionLeaders, (*countLeaders)*3);
         sessionLeaders[(*countLeaders)] = nextLeader;
 
@@ -71,12 +70,6 @@ void taskPerform(int taskType, char* input, char* cwd, int* sessionLeaders, int*
 
     free(inputcpy);
 }
-
-/**
- * RETORNOS
- * 0 - <3
- * 1 - %
-*/
 
 bool checkDelimiter(char* input){
     int len = strlen(input);
@@ -96,7 +89,9 @@ bool checkForeground(char* input){
     int len = strlen(input);
 
     for(int i=0; i< len; i++){
-        if(input[i] == '%') return true;
+        if(input[i] == '%'){
+            if(input[i-1]==' ') return true;
+        }
     }
 
     return false;
