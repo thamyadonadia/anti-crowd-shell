@@ -30,7 +30,11 @@ void singleProcess(char* command){ // recebe o comando sem o %
     // nome do executável + no máximo 3 argumentos
     printf("UNICO PROCESSO\n");
     
-    char* filename; char* args[3]; int i=0; pid_t pid;
+    char* filename; 
+
+    //TODO: ADAPTAR ESSA PARTE DO CÓDIGO7
+    char* args[5] = {NULL, NULL, NULL, NULL, NULL}; 
+    int i=0; pid_t pid;
     
     if(checkForeground(command)){
         pid = fork();
@@ -98,11 +102,10 @@ int backgroundGroupProcess(char* input){
             }
         }
     }
-
-    pid_t leader = fork(); pid_t pid;
-
+    pid_t leader = fork();
+    pid_t pid;
     if(leader == 0){ // no processo filho líder
-       setsid();
+       setsid(); //processo em nova sessão
 
         for(int i=inicio; i<=len; i++){
             if(((i != len-1) && (input[i] == '<' && input[i+1] == '3')) || input[i] == '\0'){
@@ -124,19 +127,23 @@ int backgroundGroupProcess(char* input){
                     }
 
                     inicio = i+3; k=0;
-                    free(process);
-
+                    //printf("%s %s %s %s %s\n", args[0], args[1], args[2], args[3] ,args[4]);
                     pid = fork();
                     if(pid==0) execvp(filename, args);
-                    else waitpid(pid, NULL, WNOHANG);
+                    else{
+                        free(process);
+                        waitpid(pid, NULL, WNOHANG);
+                    } 
                 }
             }
-        }        
-    
+        }
         execvp(filenameLeader, argsLeader);
 
-    } else waitpid(leader, NULL, WNOHANG);
-
+    } else{
+        free(processLeader);
+        waitpid(leader, NULL, WNOHANG);
+        sleep(1);
+    } 
     return leader;
 }
 
