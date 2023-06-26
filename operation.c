@@ -17,6 +17,7 @@ void changeDirectory(char* path, char* cwd){
 void exitShell(char* input, int* sessionLeaders, int* countLeaders){
     for(int i=0; i<(*countLeaders); i++){
         kill(sessionLeaders[i], SIGKILL);
+        printf("%d\n", i);
     }
 
     free(sessionLeaders); free(input);
@@ -58,7 +59,7 @@ void singleProcess(char* command){ // recebe o comando sem o %
                 args[i] = strtok(NULL, " "); 
                 //printf("arg[%d] = %s\n", i, args[i]);
             }
-            
+            //TODO: THAMYA SABE O QUE É
             setsid();
             execvp(filename, args); 
         }
@@ -68,48 +69,73 @@ void singleProcess(char* command){ // recebe o comando sem o %
 
 int backgroundGroupProcess(char* input){
     int len = strlen(input);
-    int k=0, inicio=0, processCount=0;
-    pid_t leader; pid_t processGroupID;
+    int k=0, inicio=0;
 
+    char* processLeader = malloc(sizeof(char) * strlen(input)); char* filenameLeader; 
+    char* argsLeader[5] = {NULL, NULL, NULL, NULL, NULL};
+            
+    // pega o processo líder
     for(int i=0; i<= len; i++){
         if(((i != len-1) && (input[i] == '<' && input[i+1] == '3')) || input[i] == '\0'){
             if(input[i-1]==' ' || input[i]=='\0'){
-                char* process = malloc(sizeof(char) * 100);
-            
+               
                 for(int j=inicio; j<i; j++){
-                    process[k] = input[j];
+                    processLeader[k] = input[j];
                     k++;
                 }
 
-                char* filename = strtok(process, " "); char* args[3]; int l=0;
-                args[l] = strtok(NULL, " ");
-                while(args[l] && l<2){
+                filenameLeader = strtok(processLeader, " "); int l=0;
+                argsLeader[0] = filenameLeader;
+                argsLeader[l] = strtok(NULL, " ");
+
+                while(argsLeader[l] && l<3){
                     l++;
-                    args[l] = strtok(NULL, " "); 
+                    argsLeader[l] = strtok(NULL, " "); 
                 }
 
-                if(processCount==0){ // primeiro processo lido
-                    leader = fork();
-
-                    if(!leader){ // no filho
-                        processGroupID = setsid();
-                        execvp(filename, args);
-                    } else waitpid(leader, NULL, WUNTRACED);
-
-                }else{
-                    pid_t pid = fork();
-
-                    if(!pid){ // no filho
-                        setpgid(pid, processGroupID);
-                        execvp(filename, args);
-                    } else waitpid(pid, NULL, WUNTRACED);
-                }
-
-                inicio = i+3; k=0; processCount++;
-                free(process);
-            }  
+                inicio = i+3; k=0; 
+                break;
+            }
         }
-    }    
+    }
+
+    pid_t leader = fork(); pid_t pid;
+
+    if(leader == 0){ // no processo filho líder
+       setsid();
+
+        for(int i=inicio; i<=len; i++){
+            if(((i != len-1) && (input[i] == '<' && input[i+1] == '3')) || input[i] == '\0'){
+                if(input[i-1]==' ' || input[i]=='\0'){
+                    char* process = malloc(sizeof(char) * strlen(input));
+
+                    for(int j=inicio; j<i; j++){
+                        process[k] = input[j];
+                        k++;
+                    }
+
+                    char* filename = strtok(process, " "); char* args[5] = {NULL, NULL, NULL, NULL, NULL};
+                    args[0] = filename;
+                    int l=1; args[l] = strtok(NULL, " ");
+
+                    while(args[l] && l<3){
+                        l++; 
+                        args[l] = strtok(NULL, " "); 
+                    }
+
+                    inicio = i+3; k=0;
+                    free(process);
+
+                    pid = fork();
+                    if(pid==0) execvp(filename, args);
+                    else waitpid(pid, NULL, WNOHANG);
+                }
+            }
+        }        
+    
+        execvp(filenameLeader, argsLeader);
+
+    } else waitpid(leader, NULL, WNOHANG);
 
     return leader;
 }
