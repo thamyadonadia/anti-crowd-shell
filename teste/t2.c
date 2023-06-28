@@ -3,6 +3,6 @@
 int main(int argc, char const *argv[])
 {
     /* code */
-    sleep(100);
+    sleep(30);
     return 0;
 }
