@@ -2,82 +2,72 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "services.h"
 #include "operation.h"
 
-void shellHeader(char* cd){
-    printf("acsh %s> ", cd);
+void shellHeader(){
+    printf("acsh> ");
 }
 
 char* inputEntry(){
-    char* line = NULL;
-    size_t len = 0;
-    int tam = getline(&line, &len, stdin);
-
-    line[tam-1] = '\0'; //remove newline character
-
+    char* line = NULL; size_t len = 0;
+    if(getline(&line, &len, stdin)!=-1) line = strtok(line, "\n");
     return line;
 }
 
-
-/**
- * RETORNOS
- * 0 - cd
- * 1 - exit
- * 2 - ls
- * 3 - processos em background
- * 4 - um único processo
-*/
 int taskCaseHandler(char* input){
     int len = strlen(input);
-    bool delim = checkDelimiter(input);
-
+    bool delim = checkDelimiter(input, len);
+    bool foreground = checkForeground(input, len);
+    
     char* command = strtok(input, " ");
     char* args = strtok(NULL, " ");
 
-    if(!strcmp(command, "cd")) return 0;
-    else if(!strcmp(command, "exit")) return 1;
-    else if(!strcmp(command, "ls")) return 2;
-    else if(delim) return 3; 
-    else return 4;
+    if(!strcmp(command, "cd")) return CD;
+    else if(!strcmp(command, "exit")) return EXIT;
+    else if(foreground) return FOREGROUND_PROCESS;
+    else if(delim) return BACKGROUND_GROUP_PROCESS; 
+    else return BACKGROUND_SINGLE_PROCESS; 
 }
 
-void taskPerform(int taskType, char* input, char* cwd, int* sessionLeaders, int* countLeaders, int* sizeSessionLeaders){
-    
-    char* inputcpy = strdup(input);
+void taskPerform(int taskType, char* input, int* sessionLeaders, int* countLeaders, int* sizeSessionLeaders){
+    char* inputCopy = strdup(input);
     char* command = strtok(input, " "); char* args = strtok(NULL, " ");
 
-    if(taskType == 0){
-        printf("args = %s\n", args);
-        changeDirectory(args, cwd);
+    if(taskType == CD){
+        changeDirectory(args);
 
-    }else if(taskType == 1){
-        exitShell(inputcpy, sessionLeaders, countLeaders);
+    }else if(taskType == EXIT){
+        exitShell(inputCopy, sessionLeaders, countLeaders);
+        
+    } else if(taskType == FOREGROUND_PROCESS){
+        foreGroundSingleProcess(inputCopy);
 
-    }else if(taskType == 2){
-        list(args);
-
-    }else if(taskType == 3){
-        int nextLeader = backgroundGroupProcess(inputcpy); *countLeaders++;
+    } else if(taskType == BACKGROUND_SINGLE_PROCESS){
+        int nextLeader = backGroundSingleProcess(inputCopy);
+        (*countLeaders)++;
         if((*countLeaders)>(*sizeSessionLeaders)) sessionLeaders = realloc(sessionLeaders, (*countLeaders)*3);
         sessionLeaders[(*countLeaders)] = nextLeader;
 
-    } else if(taskType == 4){
-        singleProcess(inputcpy);
+    } else if(taskType == BACKGROUND_GROUP_PROCESS){ 
+        int nextLeader = backgroundGroupProcess(inputCopy); 
+        (*countLeaders)++;
+        if((*countLeaders)>(*sizeSessionLeaders)) sessionLeaders = realloc(sessionLeaders, (*countLeaders)*3);
+        sessionLeaders[(*countLeaders)] = nextLeader;
 
-    } else printf("operações ainda não tratadas!\n");
+    } else printf("ERROR: Operation not found!\n");
 
-    free(inputcpy);
+    free(inputCopy);
+    sleep(1); //apenas para que o header apareça normalmente
 }
 
-bool checkDelimiter(char* input){
-    int len = strlen(input);
-
-     for(int i=0; i<len; i++){
-        //possivel delimitador encontrado
+bool checkDelimiter(char* input, int len){
+    for(int i=0; i<len; i++){
+        //possivel operador especial encontrado
         if(input[i]=='<' && input[i+1]=='3'){
-            //confirmação da delimitação e que há outro programa a ser executado
+            //confirmação da existência do operador especial
             if(input[i-1]== ' ' && input[i+2]== ' ') return true;
         }
     }
@@ -85,12 +75,12 @@ bool checkDelimiter(char* input){
     return false;
 }
 
-bool checkForeground(char* input){
-    int len = strlen(input);
-
+bool checkForeground(char* input, int len){
     for(int i=0; i< len; i++){
-        if(input[i] == '%'){
-            if(input[i-1]==' ') return true;
+        //possivel operador especial encontrado
+        if(input[i] == '%'){ 
+            //confirmação da existência do operador especial
+            if(input[i-1]==' ') return true; 
         }
     }
 
