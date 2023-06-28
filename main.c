@@ -7,18 +7,18 @@
 #include "operation.h"
 #include "services.h"
 
+//TODO: COMENTAR CÓDIGO
 int main(int argc, char const *argv[]){
-    //system("clear");
+   // system("clear");
+    // TODO: fazer teste de múltiplos comandos seguidos
     
-    char* cwd = malloc(1000 * sizeof(char));
     int countLeaders = 0; int sizeSessionLeaders = 10000; 
     int* sessionLeaders = malloc(sizeSessionLeaders * sizeof(int));
-    cwd = getcwd(cwd, 1000);
 
     while (1){
         char* input = malloc(1000 * sizeof(char)); 
         char* inputCopy = malloc(1000 * sizeof(char));
-        shellHeader(cwd);
+        shellHeader();
 
         //get user input
         input = inputEntry();
@@ -27,15 +27,11 @@ int main(int argc, char const *argv[]){
         int taskType = taskCaseHandler(input);
 
         //actually executes the task
-        taskPerform(taskType, inputCopy, cwd, sessionLeaders, &countLeaders, &sizeSessionLeaders);
+        taskPerform(taskType, inputCopy,sessionLeaders, &countLeaders, &sizeSessionLeaders);
 
         //pre requisite for inputEntry function
         free(input);
         free(inputCopy);
     }
-    
-    //essas coisas devem estar no exit?
-    free(cwd);
-    free(sessionLeaders);
     return 0;
 }
