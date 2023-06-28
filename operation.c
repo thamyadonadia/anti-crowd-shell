@@ -7,69 +7,63 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <errno.h>
 
 // ========== Operações Internas ============
-void changeDirectory(char* path, char* cwd){
-    chdir(path); //TODO: verificação de erro caso o diretório não exista.
-    getcwd(cwd, 1000);
+void changeDirectory(char* path){
+    if(path == NULL) chdir("/");
+    if((chdir(path) == -1) && (errno == ENOENT)) printf("ERROR: Directory or file not found!\n");
 }
 
 void exitShell(char* input, int* sessionLeaders, int* countLeaders){
-    for(int i=0; i<(*countLeaders); i++){
-        kill(sessionLeaders[i], SIGKILL);
-        printf("%d\n", i);
-    }
-
-    free(sessionLeaders); free(input);
+    for(int i=0; i<(*countLeaders); i++) kill(sessionLeaders[i], SIGKILL);
+    free(sessionLeaders);
+    free(countLeaders);
+    free(input);
     exit(0);
 }
 
-
 // =========== Execução de programas ==========
-void singleProcess(char* command){ // recebe o comando sem o %
-    // nome do executável + no máximo 3 argumentos
-    printf("UNICO PROCESSO\n");
-    
-    char* filename; 
-
-    //TODO: ADAPTAR ESSA PARTE DO CÓDIGO7
+//TODO: PERGUNTAR AO ZE GONC SOBRE A QUESTAO DO %
+//SE É EXCLUSIVO OU SE PODE SER USADO COMO PARTE DO NOME DE PROGRAMA
+void foreGroundSingleProcess(char* command){
+    char* filename; int i=0; pid_t pid;
     char* args[5] = {NULL, NULL, NULL, NULL, NULL}; 
-    int i=0; pid_t pid;
-    
-    if(checkForeground(command)){
-        pid = fork();
-        
-        if(!pid){ //no filho
-            filename = strtok(command, " ");
+    int commandLen = strlen(command);
 
-            while(args[i] && i<2){
-                args[i] = strtok(NULL, " "); i++; // TODO: tirar o % dos argumentos
-                printf("arg[%d] = %s\n", i, args[i]);
-            }
-            execvp(filename, args);
+    pid = fork();
+    if(!pid){ //no filho
+        filename = strtok(command, " ");
+        while(args[i] && i<2){
+            args[i] = strtok(NULL, " "); i++; // TODO: tirar o % dos argumentos
         }
-
-        else waitpid(pid, NULL, WUNTRACED); //no pai
+        execvp(filename, args);
     }
-    //processo em background
-    else{
-        printf("PROCESSO BACKGROUND\n");
-        pid = fork();
 
-        if(!pid){ //no filho
-            filename = strtok(command, " ");
-
-            while(args[i] && i<2){
-                args[i] = strtok(NULL, " "); 
-                //printf("arg[%d] = %s\n", i, args[i]);
-            }
-            //TODO: THAMYA SABE O QUE É
-            setsid();
-            execvp(filename, args); 
-        }
-        waitpid(pid, NULL, WUNTRACED);
-    }
+    else waitpid(pid, NULL, WUNTRACED); //no pai
 }
+
+int backGroundSingleProcess(char* command){
+    char* filename; int i=0; pid_t pid;
+    char* args[5] = {NULL, NULL, NULL, NULL, NULL}; 
+
+    pid = fork();
+
+    if(!pid){ //no filho
+        filename = strtok(command, " ");
+
+        while(args[i] && i<2){
+            args[i] = strtok(NULL, " "); 
+        }
+
+        setsid();
+        if((execvp(filename, args)==-1) && (errno == ENOENT)) printf("ERROR: Executable not found!\n");
+
+    }
+    
+    return pid;
+}
+
 
 int backgroundGroupProcess(char* input){
     int len = strlen(input);
@@ -102,8 +96,8 @@ int backgroundGroupProcess(char* input){
             }
         }
     }
-    pid_t leader = fork();
-    pid_t pid;
+
+    pid_t leader = fork(); pid_t pid;
     if(leader == 0){ // no processo filho líder
        setsid(); //processo em nova sessão
 
@@ -127,34 +121,26 @@ int backgroundGroupProcess(char* input){
                     }
 
                     inicio = i+3; k=0;
-                    //printf("%s %s %s %s %s\n", args[0], args[1], args[2], args[3] ,args[4]);
                     pid = fork();
-                    if(pid==0) execvp(filename, args);
-                    else{
+                    
+                    if(pid==0){
+                        if((execvp(filename, args) == -1) && (errno == ENOENT)){
+                            printf("ERROR: Executable not found!\n");
+                        }
+                        
+                    }else{
                         free(process);
                         waitpid(pid, NULL, WNOHANG);
                     } 
                 }
             }
         }
-        execvp(filenameLeader, argsLeader);
+        
+        if((execvp(filenameLeader, argsLeader) == -1) && (errno == ENOENT)) printf("ERROR: Executable not found!\n");
 
-    } else{
+    }else{
         free(processLeader);
-        waitpid(leader, NULL, WNOHANG);
-        sleep(1);
     } 
-    return leader;
-}
 
-void list(char* args){
-    int pid = fork();
-    int status;
-    if(!pid){
-        execv("/bin/ls", &args);
-        exit(0);
-    }
-    else{
-        waitpid(pid, &status, 0);
-    }
+    return leader;
 }
