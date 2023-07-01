@@ -2,6 +2,11 @@
     "files.associations": {
         "*.csv": "dynamic csv",
         "stdio.h": "c",
-        "stdlib.h": "c"
-    }
+        "stdlib.h": "c",
+        "signalhandler.h": "c",
+        "operation.h": "c",
+        "services.h": "c",
+        "signal.h": "c"
+    },
+    "C_Cpp.default.compilerPath": "/usr/bin/gcc"
 }

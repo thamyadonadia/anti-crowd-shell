@@ -1,5 +1,6 @@
 #include "operation.h"
 #include "services.h"
+#include "signalhandler.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,10 +38,18 @@ void foreGroundSingleProcess(char* command){
         while(args[i] && i<2){
             args[i] = strtok(NULL, " "); i++; // TODO: tirar o % dos argumentos
         }
+        //EXEC_DEFAULT()
+        signalExecDefault();
         execvp(filename, args);
     }
 
-    else waitpid(pid, NULL, WUNTRACED); //no pai
+    else {
+        //EXEC_RUNNING()
+        signalExecRunning();
+        waitpid(pid, NULL, WUNTRACED); //no pai
+        //EXEC_FINISHED()
+        signalExecFinished();
+    }
 }
 
 int backGroundSingleProcess(char* command){

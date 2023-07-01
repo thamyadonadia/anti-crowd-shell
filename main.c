@@ -6,12 +6,14 @@
 
 #include "operation.h"
 #include "services.h"
+#include "signalhandler.h"
 
 //TODO: COMENTAR CÓDIGO
 int main(int argc, char const *argv[]){
    // system("clear");
     // TODO: fazer teste de múltiplos comandos seguidos
     
+    signalExecFinished();
     int countLeaders = 0; int sizeSessionLeaders = 10000; 
     int* sessionLeaders = malloc(sizeSessionLeaders * sizeof(int));
 
