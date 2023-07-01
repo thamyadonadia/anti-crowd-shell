@@ -12,23 +12,24 @@ void signalHandlerPrint(int signum){
     return;
 }
 void signalHandlerNoPrint(int signum){
+    printf("\n");
     return;
 }
 
 void signalExecDefault(){
     signal(SIGINT, SIG_DFL);
     signal(SIGQUIT, SIG_DFL);
-    signal(SIGSTOP, SIG_DFL);
+    signal(SIGTSTP, SIG_DFL);
 }
 
 void signalExecRunning(){
     signal(SIGINT, signalHandlerNoPrint);
     signal(SIGQUIT, signalHandlerNoPrint);
-    signal(SIGSTOP, signalHandlerNoPrint);
+    signal(SIGTSTP, signalHandlerNoPrint);
 }
 
 void signalExecFinished(){
     signal(SIGINT, signalHandlerPrint);
     signal(SIGQUIT, signalHandlerPrint);
-    signal(SIGSTOP, signalHandlerPrint);
+    signal(SIGTSTP, signalHandlerPrint);
 }
