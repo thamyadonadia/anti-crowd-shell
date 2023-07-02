@@ -13,8 +13,10 @@ void shellHeader(){
 
 char* inputEntry(){
     char* line = NULL; size_t len = 0;
-    if(getline(&line, &len, stdin)!=-1) line = strtok(line, "\n");
-    return line;
+    char* retorno;
+    if(getline(&line, &len, stdin)!=-1) retorno = strtok(line, "\n");
+    free(line);
+    return retorno;
 }
 
 int taskCaseHandler(char* input){
@@ -23,7 +25,6 @@ int taskCaseHandler(char* input){
     bool foreground = checkForeground(input, len);
     
     char* command = strtok(input, " ");
-    char* args = strtok(NULL, " ");
 
     if(!strcmp(command, "cd")) return CD;
     else if(!strcmp(command, "exit")) return EXIT;
@@ -34,10 +35,11 @@ int taskCaseHandler(char* input){
 
 void taskPerform(int taskType, char* input, int* sessionLeaders, int* countLeaders, int* sizeSessionLeaders){
     char* inputCopy = strdup(input);
-    char* command = strtok(input, " "); char* args = strtok(NULL, " ");
+    char* command = strtok(input, " "); 
+    command = strtok(NULL, " ");
 
     if(taskType == CD){
-        changeDirectory(args);
+        changeDirectory(command);
 
     }else if(taskType == EXIT){
         exitShell(inputCopy, sessionLeaders, countLeaders);
@@ -49,18 +51,17 @@ void taskPerform(int taskType, char* input, int* sessionLeaders, int* countLeade
         int nextLeader = backGroundSingleProcess(inputCopy);
         (*countLeaders)++;
         if((*countLeaders)>(*sizeSessionLeaders)) sessionLeaders = realloc(sessionLeaders, (*countLeaders)*3);
-        sessionLeaders[(*countLeaders)] = nextLeader;
+        sessionLeaders[(*countLeaders)-1] = nextLeader;
 
     } else if(taskType == BACKGROUND_GROUP_PROCESS){ 
-        int nextLeader = backgroundGroupProcess(inputCopy); 
+        int nextLeader = backgroundGroupProcess(inputCopy);
         (*countLeaders)++;
         if((*countLeaders)>(*sizeSessionLeaders)) sessionLeaders = realloc(sessionLeaders, (*countLeaders)*3);
-        sessionLeaders[(*countLeaders)] = nextLeader;
+        sessionLeaders[(*countLeaders)-1] = nextLeader;
 
     } else printf("ERROR: Operation not found!\n");
 
     free(inputCopy);
-    sleep(1); //apenas para que o header apareça normalmente
 }
 
 bool checkDelimiter(char* input, int len){

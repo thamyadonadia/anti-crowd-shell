@@ -10,30 +10,30 @@
 
 //TODO: COMENTAR CÓDIGO
 int main(int argc, char const *argv[]){
-   // system("clear");
-    // TODO: fazer teste de múltiplos comandos seguidos
+    system("clear");
     
     signalExecFinished();
     int countLeaders = 0; int sizeSessionLeaders = 10000; 
-    int* sessionLeaders = malloc(sizeSessionLeaders * sizeof(int));
+    int* sessionLeaders = calloc(sizeSessionLeaders, sizeof(int));
 
     while (1){
-        char* input = malloc(1000 * sizeof(char)); 
-        char* inputCopy = malloc(1000 * sizeof(char));
+        char* input;
+        char inputCopy[1000] = "";
         shellHeader();
 
         //get user input
         input = inputEntry();
-        strcpy(inputCopy ,input);
+        if(!input){
+            free(input);
+            continue;
+        }
+
+        sprintf(inputCopy, "%s", input);
         //find out which type of task it is
         int taskType = taskCaseHandler(input);
 
         //actually executes the task
-        taskPerform(taskType, inputCopy,sessionLeaders, &countLeaders, &sizeSessionLeaders);
-
-        //pre requisite for inputEntry function
-        free(input);
-        free(inputCopy);
+        taskPerform(taskType, inputCopy, sessionLeaders, &countLeaders, &sizeSessionLeaders);
     }
     return 0;
 }

@@ -6,6 +6,6 @@ int main(int argc, char const *argv[])
 {
     /* code */
     printf("oioi processo t1\n");
-    sleep(30);
+    sleep(10);
     return 0;
 }

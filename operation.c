@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <fcntl.h>
 
 // ========== Operações Internas ============
 void changeDirectory(char* path){
@@ -17,9 +18,10 @@ void changeDirectory(char* path){
 }
 
 void exitShell(char* input, int* sessionLeaders, int* countLeaders){
-    for(int i=0; i<(*countLeaders); i++) kill(sessionLeaders[i], SIGKILL);
+    for(int i=0; i<(*countLeaders); i++){
+        kill(sessionLeaders[i]*(-1), SIGKILL);
+    }
     free(sessionLeaders);
-    free(countLeaders);
     free(input);
     exit(0);
 }
@@ -30,7 +32,6 @@ void exitShell(char* input, int* sessionLeaders, int* countLeaders){
 void foreGroundSingleProcess(char* command){
     char* filename; int i=0; pid_t pid;
     char* args[5] = {NULL, NULL, NULL, NULL, NULL}; 
-    int commandLen = strlen(command);
 
     pid = fork();
     if(!pid){ //no filho
@@ -53,20 +54,25 @@ void foreGroundSingleProcess(char* command){
 }
 
 int backGroundSingleProcess(char* command){
-    char* filename; int i=0; pid_t pid;
+    char* filename; int i=1; pid_t pid;
     char* args[5] = {NULL, NULL, NULL, NULL, NULL}; 
-
     pid = fork();
 
     if(!pid){ //no filho
         filename = strtok(command, " ");
+        args[0] = filename;
 
-        while(args[i] && i<2){
+        while(args[i] && i<3){
             args[i] = strtok(NULL, " "); 
         }
-
         setsid();
-        if((execvp(filename, args)==-1) && (errno == ENOENT)) printf("ERROR: Executable not found!\n");
+
+        int devNull = open("/dev/null", O_RDWR);
+        dup2(devNull, STDIN_FILENO);
+        dup2(devNull, STDOUT_FILENO);
+        close(devNull);
+
+        if(execvp(filename, args) == -1) exit(errno);
 
     }
     
@@ -110,6 +116,11 @@ int backgroundGroupProcess(char* input){
     if(leader == 0){ // no processo filho líder
        setsid(); //processo em nova sessão
 
+        int devNull = open("/dev/null", O_RDWR);
+        dup2(devNull, STDIN_FILENO);
+        dup2(devNull, STDOUT_FILENO);
+        close(devNull);
+
         for(int i=inicio; i<=len; i++){
             if(((i != len-1) && (input[i] == '<' && input[i+1] == '3')) || input[i] == '\0'){
                 if(input[i-1]==' ' || input[i]=='\0'){
@@ -133,9 +144,7 @@ int backgroundGroupProcess(char* input){
                     pid = fork();
                     
                     if(pid==0){
-                        if((execvp(filename, args) == -1) && (errno == ENOENT)){
-                            printf("ERROR: Executable not found!\n");
-                        }
+                        if(execvp(filename, args) == -1) exit(errno); 
                         
                     }else{
                         free(process);
@@ -145,11 +154,10 @@ int backgroundGroupProcess(char* input){
             }
         }
         
-        if((execvp(filenameLeader, argsLeader) == -1) && (errno == ENOENT)) printf("ERROR: Executable not found!\n");
+        if(execvp(filenameLeader, argsLeader) == -1) exit(errno);
 
     }else{
         free(processLeader);
-    } 
-
+    }
     return leader;
 }
