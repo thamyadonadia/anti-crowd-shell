@@ -1,10 +1,4 @@
 #include "signalhandler.h"
-#include "services.h"
-
-#include <stdio.h>
-#include <signal.h>
-#include<unistd.h>
-
 
 void signalHandlerPrint(int signum){
     printf("\nNão adianta me enviar o sinal por Ctrl-... . Estou vacinado!\nacsh>");

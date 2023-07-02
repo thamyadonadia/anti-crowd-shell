@@ -1,14 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <limits.h>
-
 #include "operation.h"
 #include "services.h"
 #include "signalhandler.h"
 
-//TODO: COMENTAR CÓDIGO
+
 int main(int argc, char const *argv[]){
     system("clear");
     
@@ -29,10 +23,10 @@ int main(int argc, char const *argv[]){
         }
 
         sprintf(inputCopy, "%s", input);
-        //find out which type of task it is
+        //finds out which type of task it is
         int taskType = taskCaseHandler(input);
 
-        //actually executes the task
+        //executes the task
         taskPerform(taskType, inputCopy, sessionLeaders, &countLeaders, &sizeSessionLeaders);
     }
     return 0;

@@ -1,23 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <unistd.h>
-
 #include "services.h"
-#include "operation.h"
+
 
 void shellHeader(){
     printf("acsh> ");
 }
 
+
 char* inputEntry(){
     char* line = NULL; size_t len = 0;
-    char* retorno;
-    if(getline(&line, &len, stdin)!=-1) retorno = strtok(line, "\n");
+    char* output;
+    if(getline(&line, &len, stdin) != -1) output = strtok(line, "\n");
     free(line);
-    return retorno;
+    return output;
 }
+
 
 int taskCaseHandler(char* input){
     int len = strlen(input);
@@ -47,6 +43,7 @@ void taskPerform(int taskType, char* input, int* sessionLeaders, int* countLeade
     } else if(taskType == FOREGROUND_PROCESS){
         foreGroundSingleProcess(inputCopy);
 
+    //in next cases, there is a need to keep pid of processes in new session
     } else if(taskType == BACKGROUND_SINGLE_PROCESS){
         int nextLeader = backGroundSingleProcess(inputCopy);
         (*countLeaders)++;
@@ -60,30 +57,27 @@ void taskPerform(int taskType, char* input, int* sessionLeaders, int* countLeade
         sessionLeaders[(*countLeaders)-1] = nextLeader;
 
     } else printf("ERROR: Operation not found!\n");
-
     free(inputCopy);
 }
 
 bool checkDelimiter(char* input, int len){
     for(int i=0; i<len; i++){
-        //possivel operador especial encontrado
+        //possible <3 found
         if(input[i]=='<' && input[i+1]=='3'){
-            //confirmação da existência do operador especial
+            // <3 confirmed 
             if(input[i-1]== ' ' && input[i+2]== ' ') return true;
         }
     }
-
     return false;
 }
 
 bool checkForeground(char* input, int len){
     for(int i=0; i< len; i++){
-        //possivel operador especial encontrado
+        //possible % found
         if(input[i] == '%'){ 
-            //confirmação da existência do operador especial
+            //%confirmed
             if(input[i-1]==' ') return true; 
         }
     }
-
     return false;
 }
